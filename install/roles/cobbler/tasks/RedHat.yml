@@ -197,7 +197,7 @@
   with_items: distros
 
 - name: add repos
-  command: cobbler repo add --name {{ item.ppa_repo_name }} --mirror=/var/lib/cobbler/repo_mirror/{{ item.ppa_repo_name }} --mirror-locally=Y --arch=x86_64
+  command: cobbler repo add --name {{ item.ppa_repo_name }} --mirror=/var/lib/cobbler/repo_mirror/{{ item.ppa_repo_name }} --mirror-locally=Y --arch=x86_64 {{ item.extra }}
   with_items: distros
   args:
     creates: /opt/repo_added.txt

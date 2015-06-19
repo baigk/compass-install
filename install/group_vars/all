@@ -148,11 +148,12 @@ distros:
       iso_us_url: "https://s3-us-west-1.amazonaws.com/compass-local-repo/ubuntu/14.04/Ubuntu-14.04-x86_64.iso",
       ppa_us_url: "https://s3-us-west-1.amazonaws.com/compass-local-repo/ubuntu/14.04/ubuntu_14_04_ppa_repo.tar.gz",
       iso_lab_url: "http://192.168.120.2/cobbler/iso/ubuntu/Ubuntu-14.04-x86_64.iso",
-      ppa_lab_url: "http://192.168.120.2/cobbler/ppa_repo/ubuntu_14_04_ppa_repo.tar.gz",
+      ppa_lab_url: "http://192.168.121.12/ubuntu_ppa.tar.gz",
       ppa_repo_name: "ubuntu_14_04_ppa_repo",
       breed: "ubuntu",
       kickstart: "default.seed",
-      kopts: "netcfg/choose_interface=auto"
+      kopts: "netcfg/choose_interface=auto",
+      extra: "--apt-dists=trusty --apt-components=main"
     }
 
   - {
@@ -164,7 +165,8 @@ distros:
       ppa_repo_name: "centos_6_5_ppa_repo",
       breed: "redhat",
       kickstart: "default.ks",
-      kopts: ""
+      kopts: "",
+      extra: ""
     }
 
 ##  volume mapping for cobbler ##
