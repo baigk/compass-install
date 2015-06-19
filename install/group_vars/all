@@ -148,7 +148,7 @@ distros:
       iso_us_url: "https://s3-us-west-1.amazonaws.com/compass-local-repo/ubuntu/14.04/Ubuntu-14.04-x86_64.iso",
       ppa_us_url: "https://s3-us-west-1.amazonaws.com/compass-local-repo/ubuntu/14.04/ubuntu_14_04_ppa_repo.tar.gz",
       iso_lab_url: "http://192.168.120.2/cobbler/iso/ubuntu/Ubuntu-14.04-x86_64.iso",
-      ppa_lab_url: "http://192.168.121.12/ubuntu_ppa.tar.gz",
+      ppa_lab_url: "http://192.168.121.12:9999/ubuntu_ppa.tar.gz",
       ppa_repo_name: "ubuntu_14_04_ppa_repo",
       breed: "ubuntu",
       kickstart: "default.seed",
