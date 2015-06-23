@@ -1,0 +1,4 @@
+---
+
+- hostname: name=compass
+- lineinfile: dest=/etc/hosts line="127.0.0.1 compass"
