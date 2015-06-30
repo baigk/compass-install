@@ -152,7 +152,8 @@ distros:
       ppa_repo_name: "ubuntu_14_04_ppa_repo",
       breed: "ubuntu",
       kickstart: "default.seed",
-      kopts: "netcfg/choose_interface=auto",
+      kopts: "netcfg/choose_interface=auto console='ttyS0,115200n8'",
+      kopts_post: "--kopts-post='console=ttyS0,115200n8",
       extra: "--apt-dists=trusty --apt-components=main"
     }
 
@@ -166,6 +167,7 @@ distros:
       breed: "redhat",
       kickstart: "default.ks",
       kopts: "",
+      kopts_post: "",
       extra: ""
     }
 

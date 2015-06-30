@@ -100,7 +100,6 @@
 - name: clone snippets
   git: repo={{ compass_adapter_source }}
        dest=/opt/compass-adapters
-       version={{ compass_adapter_version }}
        update=yes
        force=yes
 
@@ -281,11 +280,11 @@
   when: push_ssh_key is not defined
 
 - name: edit profiles
-  shell: cobbler profile edit --name={{ item.name }} --repo={{ item.ppa_repo_name }} --distro={{ item.name }} --ksmeta="tree=http://{{ mgmt_next_ip }}/cobbler/ks_mirror/{{ item.name }}" --kickstart=/var/lib/cobbler/kickstarts/{{ item.kickstart }} --kopts="{{ item.kopts }}"
+  shell: cobbler profile edit --name={{ item.name }} --repo={{ item.ppa_repo_name }} --distro={{ item.name }} --ksmeta="tree=http://{{ mgmt_next_ip }}/cobbler/ks_mirror/{{ item.name }}" --kickstart=/var/lib/cobbler/kickstarts/{{ item.kickstart }} --kopts="{{ item.kopts }} --kopts-post="{{ item.kopts_post }}"
   with_items: distros
 
 - name: edit profiles with push ssh key option
-  shell: cobbler profile edit --name={{ item.name }} --repo={{ item.ppa_repo_name }} --distro={{ item.name }} --ksmeta="tree=http://{{ mgmt_next_ip }}/cobbler/ks_mirror/{{ item.name }} push_ssh_keys=/var/lib/cobbler/id_rsa.pub" --kickstart=/var/lib/cobbler/kickstarts/{{ item.kickstart }} --kopts="{{ item.kopts }}"
+  shell: cobbler profile edit --name={{ item.name }} --repo={{ item.ppa_repo_name }} --distro={{ item.name }} --ksmeta="tree=http://{{ mgmt_next_ip }}/cobbler/ks_mirror/{{ item.name }} push_ssh_keys=/var/lib/cobbler/id_rsa.pub" --kickstart=/var/lib/cobbler/kickstarts/{{ item.kickstart }} --kopts="{{ item.kopts }}" --kopts-post="{{ item.kopts_post }}"
   with_items: distros
   when: push_ssh_key is defined
 
