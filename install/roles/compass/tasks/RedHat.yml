@@ -208,8 +208,12 @@
   shell: /opt/compass/bin/manage_db.py createdb
   run_once: True
 
-- name: copy ods-server httpd config
-  copy: src=ods-server.conf dest=/etc/httpd/conf.d/ods-server.conf
+- name: copy httpd config
+  copy: src={{ item }} dest=/etc/httpd/conf.d/{{ item }}
+  with_items:
+    - ods-server.conf
+    - pip.conf
+    - images.conf
   notify:
     restart http service
 
