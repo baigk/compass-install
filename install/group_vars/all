@@ -147,28 +147,14 @@ distros:
       name: "Ubuntu-14.04-x86_64",
       iso_us_url: "https://s3-us-west-1.amazonaws.com/compass-local-repo/ubuntu/14.04/Ubuntu-14.04-x86_64.iso",
       ppa_us_url: "https://s3-us-west-1.amazonaws.com/compass-local-repo/ubuntu/14.04/ubuntu_14_04_ppa_repo.tar.gz",
-      iso_lab_url: "http://192.168.120.2/cobbler/iso/ubuntu/Ubuntu-14.04-x86_64.iso",
-      ppa_lab_url: "http://192.168.121.12:9999/ubuntu_ppa.tar.gz",
+      iso_directory: "/opt/Ubuntu-14.04-x86_64.iso",
+      ppa_directory: "/opt/ubuntu_ppa.tar.gz",
       ppa_repo_name: "ubuntu_14_04_ppa_repo",
       breed: "ubuntu",
       kickstart: "default.seed",
       kopts: "netcfg/choose_interface=auto console='ttyS0,115200n8'",
       kopts_post: "console='ttyS0,115200n8'",
       extra: "--apt-dists=trusty --apt-components=main"
-    }
-
-  - {
-      name: "CentOS-6.5-x86_64",
-      iso_us_url: "https://s3-us-west-1.amazonaws.com/compass-local-repo/centos/6.5/CentOS-6.5-x86_64.iso",
-      ppa_us_url: "https://s3-us-west-1.amazonaws.com/compass-local-repo/centos/6.5/centos_6_5_ppa_repo.tar.gz",
-      iso_lab_url: "http://192.168.120.2/cobbler/iso/centos/CentOS-6.5-x86_64.iso",
-      ppa_lab_url: "http://192.168.120.2/cobbler/ppa_repo/centos_6_5_ppa_repo.tar.gz",
-      ppa_repo_name: "centos_6_5_ppa_repo",
-      breed: "redhat",
-      kickstart: "default.ks",
-      kopts: "",
-      kopts_post: "",
-      extra: ""
     }
 
 ##  volume mapping for cobbler ##
