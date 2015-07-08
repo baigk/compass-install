@@ -153,7 +153,7 @@ distros:
       breed: "ubuntu",
       kickstart: "default.seed",
       kopts: "netcfg/choose_interface=auto console='ttyS0,115200n8'",
-      kopts_post: "console='ttyS0,115200n8'",
+      kopts_post: "console='ttyS0,115200n8' console=tty0",
       extra: "--apt-dists=trusty --apt-components=main"
     }
 
