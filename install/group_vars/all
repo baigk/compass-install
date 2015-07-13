@@ -147,14 +147,26 @@ distros:
       name: "Ubuntu-14.04-x86_64",
       iso_us_url: "https://s3-us-west-1.amazonaws.com/compass-local-repo/ubuntu/14.04/Ubuntu-14.04-x86_64.iso",
       ppa_us_url: "https://s3-us-west-1.amazonaws.com/compass-local-repo/ubuntu/14.04/ubuntu_14_04_ppa_repo.tar.gz",
-      iso_directory: "/opt/Ubuntu-14.04-x86_64.iso",
-      ppa_directory: "/opt/ubuntu_ppa.tar.gz",
+      iso_file: "/opt/Ubuntu-14.04-x86_64.iso",
+      ppa_repo_file: "/opt/ubuntu_ppa.tar.gz",
       ppa_repo_name: "ubuntu_14_04_ppa_repo",
+      default_ppa_repo_name: "Ubuntu-14.04-x86_64",
       breed: "ubuntu",
       kickstart: "default.seed",
       kopts: "netcfg/choose_interface=auto console='ttyS0,115200n8' console=tty0",
       kopts_post: "console='ttyS0,115200n8'",
       extra: "--apt-dists=trusty --apt-components=main"
+    }
+  - {
+      name: "CentOS-7.1-x86_64",
+      iso_file: "/opt/CentOS-7-x86_64-Minimal-1503-01.iso",
+      ppa_repo_file: "/opt/centos_7_1_ppa_repo.tar.gz",
+      ppa_repo_name: "centos_7_1_ppa_repo",
+      breed: "redhat",
+      kickstart: "default.ks",
+      kopts: "",
+      kopts_post: "",
+      extra: ""
     }
 
 ##  volume mapping for cobbler ##

@@ -1,10 +1,4 @@
 ---
-#- name: get epel version
-#  command: > 
-#    wget -q {{ epel_base_url }} -O - | grep -oE "(href=\"epel-release-6-[0-9,.].*)" | cut -d\" -f2
-#  register: epel_file_name
-#  when: epel_presence.rc != 0
-
 - name: turn off iptables
   service: name=iptables state=stopped enabled=no
 
@@ -108,17 +102,11 @@
         recurse=yes
   with_items: distros
 
-- name: copy distributions to ubuntu ppa repo
+- name: copy distributions to ppa repo
   template: src=distributions
-        dest=/var/lib/cobbler/repo_mirror/ubuntu_12_04_ppa_repo/conf/distributions
+        dest=/var/lib/cobbler/repo_mirror/{{ item.ppa_repo_name }}/conf/distributions
         mode=0644
-  when: ubuntu_1204 in distros
-
-- name: copy distribution to ubuntu 14.04 ppa repo
-  template: src=distributions
-        dest=/var/lib/cobbler/repo_mirror/ubuntu_14_04_ppa_repo/conf/distributions
-        mode=0644
-  when: ubuntu_1404 in distros
+  with_items: distros
 
 - name: start cobbler and httpd services
   service: name={{ item }} state=restarted enabled=yes
@@ -127,7 +115,7 @@
     - cobblerd
 
 - name: copy ppa repo images
-  shell: cp -f {{ item.ppa_directory }} /var/lib/cobbler/repo_mirror/{{ item.ppa_repo_name }}.tar.gz
+  shell: cp -f {{ item.ppa_repo_file }} /var/lib/cobbler/repo_mirror/{{ item.ppa_repo_name }}.tar.gz
   with_items: distros
 
 - name: untar ppa repo images
@@ -143,13 +131,6 @@
     creates: /opt/repo_added.txt
   ignore_errors: yes
   run_once: True
-
-- name: remove ubuntu default repo
-  command: cobbler repo remove --name {{ item }}
-  with_items:
-    - "{{ ubuntu }}"
-    - "{{ ubuntu_1404 }}"
-  ignore_errors: yes
 
 - name: cobbler repo sync
   command: cobbler reposync
@@ -168,7 +149,7 @@
   file: path=/var/lib/cobbler/iso state=directory
 
 - name: copy images file
-  shell: cp {{ item.iso_directory }} /var/lib/cobbler/iso/{{ item.name }}.iso
+  shell: cp {{ item.iso_file }} /var/lib/cobbler/iso/{{ item.name }}.iso
   with_items: distros
 
 - name: update iso mode
@@ -202,14 +183,6 @@
   ignore_errors: yes
   run_once: True
 
-#- name: add profiles
-#  command: cobbler profile add --name={{ item.name }} --repo={{ item.ppa_repo_name }} --distro={{ item.name }} --ksmeta="tree=http://{{ mgmt_next_ip }}/cobbler/ks_mirror/{{ item.name }}" --kickstart=/var/lib/cobbler/kickstarts/{{ item.kickstart }} --kopts="{{ item.kopts }}"
-#  with_items: distros
-#  args:
-#    creates: /opt/profile_added.txt
-#  ignore_errors: yes
-#  run_once: True
-
 - name: generate public key file for ssh
   template: src=id_rsa.pub.j2 dest=/var/lib/cobbler/id_rsa.pub
   when: push_ssh_key is defined
@@ -227,12 +200,10 @@
   with_items: distros
   when: push_ssh_key is defined
 
-- name: remove ubuntu default repo
-  command: cobbler repo remove --name {{ item }}
-  with_items:
-    - "{{ ubuntu }}"
-    - "{{ ubuntu_1404 }}"
-  ignore_errors: yes
+- name: remove default repo
+  command: cobbler repo remove --name {{ item.name }}
+  with_items: distros
+  when: item.default_ppa_repo_name is defined
 
 - name: cobbler repo sync again
   shell: cobbler reposync
