@@ -129,11 +129,11 @@
 - name: cobbler repo sync
   command: cobbler reposync
 
-- name: download loader files
-  get_url: url={{ cobbler_loaders_url }} dest=/var/lib/cobbler/
+- name: copy loader files
+  shell: cp -f /opt/{{ cobbler_loaders_name }} /var/lib/cobbler/
 
 - name: untar loaders file
-  unarchive: src=/var/lib/cobbler/loaders.tar.gz dest=/var/lib/cobbler/ 
+  unarchive: src=/var/lib/cobbler/{{ cobbler_loaders_name }} dest=/var/lib/cobbler/ 
              copy=no
  
 - name: cobbler get loaders
