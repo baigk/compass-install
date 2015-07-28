@@ -1,8 +1,4 @@
 ---
-#- name: get epel version
-#  command: 'wget -q {{ epel_base_url }} -O - |grep -oE "(href=\"epel-release-6-[0-9,.].*)" | cut -d'"' -f2'
-#  register: epel_file_name
-#  when: epel_presence.rc != 0
 - name: stop iptables
   service: name=iptables state=stopped enabled=no
 
