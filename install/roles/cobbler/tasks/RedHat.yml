@@ -1,10 +1,4 @@
 ---
-#- name: get epel version
-#  command: > 
-#    wget -q {{ epel_base_url }} -O - | grep -oE "(href=\"epel-release-6-[0-9,.].*)" | cut -d\" -f2
-#  register: epel_file_name
-#  when: epel_presence.rc != 0
-
 - name: turn off iptables
   service: name=iptables state=stopped enabled=no
 
@@ -101,24 +95,19 @@
     - /var/log/cobbler/anamon
     - /var/log/cobbler/tasks
 
-- name: create cobbler ppa repo dir
-  file: path=/var/lib/cobbler/repo_mirror/{{ item.ppa_repo_name }}/conf
-        state=directory
-        mode=0644
-        recurse=yes
+- name: copy distributions to repo
+  template: src=distributions dest=/tmp/distributions mode=0644
+
+- name: prepare cobbler ppa repo
+  shell: |
+    for i in {{ item.ppa_repo_name }}; do
+        mkdir -p /var/lib/cobbler/repo_mirror/$i/conf
+        cp -f /tmp/distributions /var/lib/cobbler/repo_mirror/$i/conf/distributions
+        chmod 0644 /var/lib/cobbler/repo_mirror/$i/conf -R
+        cp -f {{ item.ppa_repo_dir}}/$i.tar.gz /var/lib/cobbler/repo_mirror/$i.tar.gz
+        tar -zxvf /var/lib/cobbler/repo_mirror/$i.tar.gz -C /var/lib/cobbler/repo_mirror/
+    done
   with_items: distros
-
-- name: copy distributions to ubuntu ppa repo
-  template: src=distributions
-        dest=/var/lib/cobbler/repo_mirror/ubuntu_12_04_ppa_repo/conf/distributions
-        mode=0644
-  when: ubuntu_1204 in distros
-
-- name: copy distribution to ubuntu 14.04 ppa repo
-  template: src=distributions
-        dest=/var/lib/cobbler/repo_mirror/ubuntu_14_04_ppa_repo/conf/distributions
-        mode=0644
-  when: ubuntu_1404 in distros
 
 - name: start cobbler and httpd services
   service: name={{ item }} state=restarted enabled=yes
@@ -126,39 +115,25 @@
     - httpd
     - cobblerd
 
-- name: copy ppa repo images
-  shell: cp -f {{ item.ppa_directory }} /var/lib/cobbler/repo_mirror/{{ item.ppa_repo_name }}.tar.gz
-  with_items: distros
-
-- name: untar ppa repo images
-  unarchive: src=/var/lib/cobbler/repo_mirror/{{ item.ppa_repo_name }}.tar.gz
-             dest=/var/lib/cobbler/repo_mirror/
-             copy=no
-  with_items: distros
-
 - name: add repos
-  command: cobbler repo add --name {{ item.ppa_repo_name }} --mirror=/var/lib/cobbler/repo_mirror/{{ item.ppa_repo_name }} --mirror-locally=Y --arch=x86_64 {{ item.extra }}
+  shell: |
+    for i in {{ item.ppa_repo_name }}; do
+        cobbler repo add --name $i --mirror=/var/lib/cobbler/repo_mirror/$i --mirror-locally=Y --arch=x86_64 {{ item.extra }}
+    done
   with_items: distros
   args:
     creates: /opt/repo_added.txt
   ignore_errors: yes
   run_once: True
 
-- name: remove ubuntu default repo
-  command: cobbler repo remove --name {{ item }}
-  with_items:
-    - "{{ ubuntu }}"
-    - "{{ ubuntu_1404 }}"
-  ignore_errors: yes
-
 - name: cobbler repo sync
   command: cobbler reposync
 
-- name: download loader files
-  get_url: url={{ cobbler_loaders_url }} dest=/var/lib/cobbler/
+- name: copy loader files
+  shell: cp -f /opt/{{ cobbler_loaders_name }} /var/lib/cobbler/
 
 - name: untar loaders file
-  unarchive: src=/var/lib/cobbler/loaders.tar.gz dest=/var/lib/cobbler/ 
+  unarchive: src=/var/lib/cobbler/{{ cobbler_loaders_name }} dest=/var/lib/cobbler/ 
              copy=no
  
 - name: cobbler get loaders
@@ -168,7 +143,7 @@
   file: path=/var/lib/cobbler/iso state=directory
 
 - name: copy images file
-  shell: cp {{ item.iso_directory }} /var/lib/cobbler/iso/{{ item.name }}.iso
+  shell: cp {{ item.iso_file }} /var/lib/cobbler/iso/{{ item.name }}.iso
   with_items: distros
 
 - name: update iso mode
@@ -202,14 +177,6 @@
   ignore_errors: yes
   run_once: True
 
-#- name: add profiles
-#  command: cobbler profile add --name={{ item.name }} --repo={{ item.ppa_repo_name }} --distro={{ item.name }} --ksmeta="tree=http://{{ mgmt_next_ip }}/cobbler/ks_mirror/{{ item.name }}" --kickstart=/var/lib/cobbler/kickstarts/{{ item.kickstart }} --kopts="{{ item.kopts }}"
-#  with_items: distros
-#  args:
-#    creates: /opt/profile_added.txt
-#  ignore_errors: yes
-#  run_once: True
-
 - name: generate public key file for ssh
   template: src=id_rsa.pub.j2 dest=/var/lib/cobbler/id_rsa.pub
   when: push_ssh_key is defined
@@ -219,20 +186,19 @@
   when: push_ssh_key is not defined
 
 - name: edit profiles
-  shell: cobbler profile edit --name={{ item.name }} --repo={{ item.ppa_repo_name }} --distro={{ item.name }} --ksmeta="tree=http://{{ mgmt_next_ip }}/cobbler/ks_mirror/{{ item.name }}" --kickstart=/var/lib/cobbler/kickstarts/{{ item.kickstart }} --kopts="{{ item.kopts }}" --kopts-post="{{ item.kopts_post }}"
+  shell: cobbler profile edit --name={{ item.name }} --repo="{{ item.ppa_repo_name }}" --distro={{ item.name }} --ksmeta="tree=http://{{ mgmt_next_ip }}/cobbler/ks_mirror/{{ item.name }}" --kickstart=/var/lib/cobbler/kickstarts/{{ item.kickstart }} --kopts="{{ item.kopts }}" --kopts-post="{{ item.kopts_post }}"
   with_items: distros
+  when: push_ssh_key is not defined
 
 - name: edit profiles with push ssh key option
-  shell: cobbler profile edit --name={{ item.name }} --repo={{ item.ppa_repo_name }} --distro={{ item.name }} --ksmeta="tree=http://{{ mgmt_next_ip }}/cobbler/ks_mirror/{{ item.name }} push_ssh_keys=/var/lib/cobbler/id_rsa.pub" --kickstart=/var/lib/cobbler/kickstarts/{{ item.kickstart }} --kopts="{{ item.kopts }}" --kopts-post="{{ item.kopts_post }}"
+  shell: cobbler profile edit --name={{ item.name }} --repo="{{ item.ppa_repo_name }}" --distro={{ item.name }} --ksmeta="tree=http://{{ mgmt_next_ip }}/cobbler/ks_mirror/{{ item.name }} push_ssh_keys=/var/lib/cobbler/id_rsa.pub" --kickstart=/var/lib/cobbler/kickstarts/{{ item.kickstart }} --kopts="{{ item.kopts }}" --kopts-post="{{ item.kopts_post }}"
   with_items: distros
   when: push_ssh_key is defined
 
-- name: remove ubuntu default repo
-  command: cobbler repo remove --name {{ item }}
-  with_items:
-    - "{{ ubuntu }}"
-    - "{{ ubuntu_1404 }}"
-  ignore_errors: yes
+- name: remove default repo
+  command: cobbler repo remove --name {{ item.name }}
+  with_items: distros
+  when: item.default_ppa_repo_name is defined
 
 - name: cobbler repo sync again
   shell: cobbler reposync

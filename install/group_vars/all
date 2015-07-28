@@ -147,14 +147,26 @@ distros:
       name: "Ubuntu-14.04-x86_64",
       iso_us_url: "https://s3-us-west-1.amazonaws.com/compass-local-repo/ubuntu/14.04/Ubuntu-14.04-x86_64.iso",
       ppa_us_url: "https://s3-us-west-1.amazonaws.com/compass-local-repo/ubuntu/14.04/ubuntu_14_04_ppa_repo.tar.gz",
-      iso_directory: "/opt/Ubuntu-14.04-x86_64.iso",
-      ppa_directory: "/opt/ubuntu_ppa.tar.gz",
-      ppa_repo_name: "ubuntu_14_04_ppa_repo",
+      iso_file: "/opt/Ubuntu-14.04-x86_64.iso",
+      ppa_repo_dir: "/opt",
+      ppa_repo_name: "ubuntu_ppa",
+      default_ppa_repo_name: "Ubuntu-14.04-x86_64",
       breed: "ubuntu",
       kickstart: "default.seed",
       kopts: "netcfg/choose_interface=auto console='ttyS0,115200n8' console=tty0",
       kopts_post: "console='ttyS0,115200n8'",
       extra: "--apt-dists=trusty --apt-components=main"
+    }
+  - {
+      name: "CentOS-7.1-x86_64",
+      iso_file: "/opt/CentOS-7-x86_64-Minimal-1503-01.iso",
+      ppa_repo_dir: "/opt",
+      ppa_repo_name: "centos_7_1_common_ppa_repo centos_7_1_openstack_juno_ppa_repo",
+      breed: "redhat",
+      kickstart: "default.ks",
+      kopts: "",
+      kopts_post: "",
+      extra: ""
     }
 
 ##  volume mapping for cobbler ##
@@ -215,9 +227,3 @@ atomic_base_url: http://www6.atomicorp.com/channels/atomic/centos/6/x86_64/RPMS/
 #push_ssh_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDUuKnIXwxS9w+Rxb4+CL3iqNQXB+kriQyr89YeLg5X7B0h+r91okw2bgodVvoynH8n7d7afHYew4KH7pMc5a3QMf/gwhhnlfoeyimQg0IOTQ6pvNxifRi5IN9xa3mB3kL9/xVmfo9rUE6ZZ4dNQ91As706SLBzEJWUuICT7fFJqCqHbxNT9aO//TWcoJJH+d+GLfLagyfVxBHb8DcoNSKTq1rFjZCFVs9pg6aO0d6Z3FcyICxOaacsAoRZOsx8+2WsHaZRk6udbqZJHt7LBs9Bc38+YCRhc31Q2jyrm37xT3QchRl4sihqq38N03cTYBksuRfV1dJaso9MUQapa/Lv root@host-1"
 test: true
 pxe_boot_macs: ['00:00:bc:4f:a0:47','00:00:a1:06:56:ce','00:00:71:b3:50:66','00:00:84:46:a8:e4','00:00:b0:69:5f:68']
-test: true
-pxe_boot_macs: ['00:00:f6:df:0a:3e','00:00:a5:da:0e:04','00:00:af:00:2e:27','00:00:79:19:62:77','00:00:6e:17:e4:2d']
-test: true
-pxe_boot_macs: ['00:00:18:5a:49:f1','00:00:df:e9:1a:d0','00:00:5e:5c:3f:c6','00:00:8c:b0:70:5e','00:00:4f:b3:6b:58']
-test: true
-pxe_boot_macs: ['00:00:f7:28:b5:62','00:00:9c:7c:2c:e8','00:00:d7:e6:d9:9f','00:00:05:7d:a6:1e','00:00:39:24:10:40']
