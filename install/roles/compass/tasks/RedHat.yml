@@ -156,6 +156,7 @@
     - ods-server.conf
     - pip.conf
     - images.conf
+    - packages.conf
   notify:
     restart http service
 
