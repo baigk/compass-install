@@ -144,13 +144,11 @@ region: "lab"
 
 distros:
   - {
-      name: "Ubuntu-14.04-x86_64",
-      iso_us_url: "https://s3-us-west-1.amazonaws.com/compass-local-repo/ubuntu/14.04/Ubuntu-14.04-x86_64.iso",
-      ppa_us_url: "https://s3-us-west-1.amazonaws.com/compass-local-repo/ubuntu/14.04/ubuntu_14_04_ppa_repo.tar.gz",
-      iso_file: "/opt/Ubuntu-14.04-x86_64.iso",
+      name: "ubuntu-14.04.3-server-x86_64",
+      iso_file: "/opt/ubuntu-14.04.3-server-amd64.iso",
       ppa_repo_dir: "/opt",
-      ppa_repo_name: "ubuntu_ppa",
-      default_ppa_repo_name: "Ubuntu-14.04-x86_64",
+      ppa_repo_name: "trusty-juno-ppa",
+      default_ppa_repo_name: "ubuntu-14.04.3-server-x86_64",
       breed: "ubuntu",
       kickstart: "default.seed",
       kopts: "netcfg/choose_interface=auto console='ttyS0,115200n8' console=tty0",
