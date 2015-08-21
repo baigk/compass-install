@@ -159,7 +159,7 @@ distros:
       name: "CentOS-7.1-x86_64",
       iso_file: "/opt/CentOS-7-x86_64-Minimal-1503-01.iso",
       ppa_repo_dir: "/opt",
-      ppa_repo_name: "centos_7_1_common_ppa_repo centos_7_1_openstack_juno_ppa_repo",
+      ppa_repo_name: "centos7-juno-ppa",
       breed: "redhat",
       kickstart: "default.ks",
       kopts: "",
