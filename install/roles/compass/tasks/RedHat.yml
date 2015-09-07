@@ -1,4 +1,22 @@
 ---
+- name: install packages
+  yum: name={{ item }} state=present
+  with_items:
+    - python-paramiko
+    - python-jinja2
+
+- name: copy httpd config
+  copy: src={{ item }} dest=/etc/httpd/conf.d/{{ item }}
+  with_items:
+    - ods-server.conf
+    - http_pip.conf
+    - images.conf
+    - packages.conf
+  notify:
+    restart http service
+
+- meta: flush_handlers
+
 - name: stop iptables
   service: name=iptables state=stopped enabled=no
 
@@ -27,45 +45,28 @@
 - name: create compass database
   mysql_db: name=compass state=present
 
+- name: install setuptools
+  shell: cd /var/www/pip;  python ez_setup.py --download-base file:///; cd -
+
 - name: install pip
   easy_install: name=pip
 
-- name: install virtualenv
-  pip: name=virtualenv extra_args='-i http://pypi.douban.com/simple/ --trusted-host pypi.douban.com'
-  register: pip_install_result
-  until: pip_install_result|success
-  retries: 5
+- name: create pip config directory
+  file: path=~/.pip state=directory
+
+- name: update pip.conf
+  copy: src=pip.conf dest=~/.pip/pip.conf
+
+- name: install pip package
+  pip: name={{ item }}
+  with_items:
+    - lazypy
+    - virtualenv
+    - ansible
+    - pycrypto-on-pypi
 
 - name: pip install compass into virtualenv
   pip: name={{ COMPASS_PATH }} virtualenv={{ COMPASS_PATH }}/venv
-       extra_args='-i http://pypi.douban.com/simple/ --trusted-host pypi.douban.com'
-  register: pip_install_result
-  until: pip_install_result|success
-  retries: 5
-
-- name: pip install latest setuptools
-  pip: name=setuptools
-       extra_args='-i http://pypi.douban.com/simple/ --trusted-host pypi.douban.com'
-       state=latest
-  register: pip_install_result
-  until: pip_install_result|success
-  retries: 5
-
-- name: pip install latest setuptools2
-  pip: name=setuptools
-       extra_args='-i http://pypi.douban.com/simple/ --trusted-host pypi.douban.com'
-       state=latest
-  register: pip_install_result
-  until: pip_install_result|success
-  retries: 5
-
-- name: pip install ansible
-  pip: name=ansible
-       extra_args='-i http://pypi.douban.com/simple/ --trusted-host pypi.douban.com'
-       state=latest
-  register: pip_install_result
-  until: pip_install_result|success
-  retries: 5
 
 - name: create compass directories
   file: path={{ item }} state=directory
@@ -165,15 +166,6 @@
   shell: /opt/compass/bin/manage_db.py createdb
   run_once: True
 
-- name: copy httpd config
-  copy: src={{ item }} dest=/etc/httpd/conf.d/{{ item }}
-  with_items:
-    - ods-server.conf
-    - pip.conf
-    - images.conf
-    - packages.conf
-  notify:
-    restart http service
 
 - name: copy web ui files
   shell: cp -rf /opt/compass-web/v2 /var/www/compass_web/
