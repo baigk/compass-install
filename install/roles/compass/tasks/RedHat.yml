@@ -45,8 +45,13 @@
 - name: create compass database
   mysql_db: name=compass state=present
 
+
 - name: install setuptools
-  shell: cd /var/www/pip;  python ez_setup.py --download-base file:///; cd -
+  shell: |
+    cd /var/www/pip; 
+    version=`ls setuptools* | sed -e "s/setuptools-//" -e "s/.zip//g"`
+    python ez_setup.py --download-base file:// --version $version
+    cd -
 
 - name: install pip
   easy_install: name=pip
