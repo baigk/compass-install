@@ -13,7 +13,7 @@
 
 - name: configure interface for dhcp
   command: ifconfig {{ mgmt_nic }}:1 {{ mgmt_next_ip }} netmask {{ mgmt_subnet_mask }}
-  when: not mgmt_ip_same 
+  when: not mgmt_ip_same
 
 - name: copy httpd configuration files
   file: src={{ item }} dest=/etc/httpd/conf.d/{{ item }} mode=0644
@@ -59,6 +59,7 @@
     - scripts
     - triggers
     - kickstarts
+    - repo_mirror
 
 - name: copy snippets to cobbler folder
   shell: cp -rf /opt/compass-adapters/cobbler/{{ item }}/* /var/lib/cobbler/{{ item }}/
@@ -95,19 +96,25 @@
     - /var/log/cobbler/anamon
     - /var/log/cobbler/tasks
 
-- name: copy distributions to repo
-  template: src=distributions dest=/tmp/distributions mode=0644
+- name: get all ppa file
+  shell: find /opt/cobbler -name *.tar.gz
+  register: ppa_files
 
-- name: prepare cobbler ppa repo
-  shell: |
-    for i in {{ item.ppa_repo_name }}; do
-        mkdir -p /var/lib/cobbler/repo_mirror/$i/conf
-        cp -f /tmp/distributions /var/lib/cobbler/repo_mirror/$i/conf/distributions
-        chmod 0644 /var/lib/cobbler/repo_mirror/$i/conf -R
-        cp -f {{ item.ppa_repo_dir}}/$i.tar.gz /var/lib/cobbler/repo_mirror/$i.tar.gz
-        tar -zxvf /var/lib/cobbler/repo_mirror/$i.tar.gz -C /var/lib/cobbler/repo_mirror/
-    done
-  with_items: distros
+- name: untar cobbler ppa repo
+  unarchive: src={{ item }} dest=/var/lib/cobbler/repo_mirror/ copy=no
+  with_items: ppa_files.stdout_lines
+
+- name: get all ppa dir
+  shell: ls /var/lib/cobbler/repo_mirror/
+  register: ppa_dirs
+
+- name: create repo conf directory
+  file: path=/var/lib/cobbler/repo_mirror/{{ item }}/conf state=directory mode=0644
+  with_items: ppa_dirs.stdout_lines
+
+- name: create repo conf file
+  template: src=distributions dest=/var/lib/cobbler/repo_mirror/{{ item }}/conf/distributions mode=0644
+  with_items: ppa_dirs.stdout_lines
 
 - name: start cobbler and httpd services
   service: name={{ item }} state=restarted enabled=yes
@@ -115,12 +122,41 @@
     - httpd
     - cobblerd
 
+- name: import iso
+  shell: |
+    for i in `ls /opt/cobbler/{{ item.key}}/iso/*`; do
+        name=`basename $i | sed -e 's/.iso//g' -e 's/-amd64//g' -e 's/-x86_64//g'`-x86_64
+        if [[ `mount | grep "$name"` ]]; then
+            continue
+        fi
+        mkdir -p /mnt/$name
+        mount -o loop $i /mnt/$name
+        cobbler import --path=/mnt/$name \
+                       --name $name \
+                       --arch=x86_64 \
+                       --kickstart=/var/lib/cobbler/kickstarts/{{ item.value.kickstart }} \
+                       --breed={{ item.value.breed }}
+    done
+  with_dict: distros
+  ignore_errors: yes
+  run_once: True
+
+- name: get default repo
+  shell: cobbler repo list
+  register: default_repos
+
+- name: remove default repo
+  command: cobbler repo remove --name {{ item }}
+  with_items: default_repos.stdout_lines
+
 - name: add repos
   shell: |
-    for i in {{ item.ppa_repo_name }}; do
-        cobbler repo add --name $i --mirror=/var/lib/cobbler/repo_mirror/$i --mirror-locally=Y --arch=x86_64 {{ item.extra }}
+    for i in `ls /opt/cobbler/{{ item.key }}/ppa/*`; do
+        filename=`basename $i | sed 's/.tar.gz//g'`
+        cobbler repo add --name $filename --mirror=/var/lib/cobbler/repo_mirror/$filename \
+                         --mirror-locally=Y --arch=x86_64 {{ item.value.extra | default()}}
     done
-  with_items: distros
+  with_dict: distros
   args:
     creates: /opt/repo_added.txt
   ignore_errors: yes
@@ -133,49 +169,11 @@
   shell: cp -f /opt/{{ cobbler_loaders_name }} /var/lib/cobbler/
 
 - name: untar loaders file
-  unarchive: src=/var/lib/cobbler/{{ cobbler_loaders_name }} dest=/var/lib/cobbler/ 
+  unarchive: src=/var/lib/cobbler/{{ cobbler_loaders_name }} dest=/var/lib/cobbler/
              copy=no
- 
+
 - name: cobbler get loaders
   command: cobbler get-loaders
-
-- name: create directory for images
-  file: path=/var/lib/cobbler/iso state=directory
-
-- name: copy images file
-  shell: cp {{ item.iso_file }} /var/lib/cobbler/iso/{{ item.name }}.iso
-  with_items: distros
-
-- name: update iso mode
-  file: path=/var/lib/cobbler/iso/{{ item.name }}.iso mode=0644
-  with_items: distros
-
-- name: mount_info
-  command: mount
-  register: mount_info
-
-- name: create mount point
-  file: name=/mnt/{{ item.name }} state=directory
-  with_items: distros
-  when: mount_info.stdout.find('CentOS') == -1 and mount_info.stdout.find('Ubuntu') == -1
-  ignore_errors: yes
-
-- name: mount images
-  shell: mount -o loop /var/lib/cobbler/iso/{{ item.name }}.iso /mnt/{{ item.name }}
-  with_items: distros
-  when: mount_info.stdout.find('CentOS') == -1 and mount_info.stdout.find('Ubuntu') == -1
-  args:
-    creates: /opt/image_mounted.txt
-  ignore_errors: yes
-  run_once: True
-
-- name: import distros
-  command: cobbler import --path=/mnt/{{ item.name }} --name {{ item.name }} --arch=x86_64 --kickstart=/var/lib/cobbler/kickstarts/default.ks --breed={{ item.breed }}
-  with_items: distros
-  args:
-    creates: /opt/distro_imported.txt
-  ignore_errors: yes
-  run_once: True
 
 - name: generate public key file for ssh
   template: src=id_rsa.pub.j2 dest=/var/lib/cobbler/id_rsa.pub
@@ -185,20 +183,26 @@
   user: name=root generate_ssh_key=yes ssh_key_bits=2048 ssh_key_file=.ssh/id_rsa
   when: push_ssh_key is not defined
 
-- name: edit profiles
-  shell: cobbler profile edit --name={{ item.name }} --repo="{{ item.ppa_repo_name }}" --distro={{ item.name }} --ksmeta="tree=http://{{ mgmt_next_ip }}/cobbler/ks_mirror/{{ item.name }}" --kickstart=/var/lib/cobbler/kickstarts/{{ item.kickstart }} --kopts="{{ item.kopts }}" --kopts-post="{{ item.kopts_post }}"
-  with_items: distros
-  when: push_ssh_key is not defined
-
-- name: edit profiles with push ssh key option
-  shell: cobbler profile edit --name={{ item.name }} --repo="{{ item.ppa_repo_name }}" --distro={{ item.name }} --ksmeta="tree=http://{{ mgmt_next_ip }}/cobbler/ks_mirror/{{ item.name }} push_ssh_keys=/var/lib/cobbler/id_rsa.pub" --kickstart=/var/lib/cobbler/kickstarts/{{ item.kickstart }} --kopts="{{ item.kopts }}" --kopts-post="{{ item.kopts_post }}"
-  with_items: distros
+- name: make push_ssh_keys var
+  shell: echo "push_ssh_keys=/var/lib/cobbler/id_rsa.pub"
+  register: push_ssh_keys_vars
   when: push_ssh_key is defined
 
-- name: remove default repo
-  command: cobbler repo remove --name {{ item.name }}
-  with_items: distros
-  when: item.default_ppa_repo_name is defined
+- name: edit profiles
+  shell: |
+    for i in `ls /opt/cobbler/{{ item.key }}/iso/*`; do
+        name=`basename $i | sed -e 's/.iso//g' -e 's/-amd64//g' -e 's/-x86_64//g'`-x86_64
+        ppa_repo_name=`ls /opt/cobbler/{{ item.key }}/ppa | sed 's/.tar.gz//g' | xargs`
+        cobbler profile edit --name=$name --repo=$ppa_repo_name \
+            --distro=$name --ksmeta="tree=http://{{ mgmt_next_ip }}/cobbler/ks_mirror/$name" \
+            {{ push_ssh_keys_vars | default() }} \
+            --kickstart=/var/lib/cobbler/kickstarts/{{ item.value.kickstart }} \
+            --kopts={{ item.value.kopts | default("") }} \
+            --kopts-post={{ item.value.kopts_post | default("") }}
+    done
+  with_dict: distros
+  args:
+    creates: /opt/add_profile.txt
 
 - name: cobbler repo sync again
   shell: cobbler reposync

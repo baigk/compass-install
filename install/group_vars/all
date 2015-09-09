@@ -143,29 +143,16 @@ ubuntu_1404: "Ubuntu-14.04-x86_64"
 region: "lab"
 
 distros:
-  - {
-      name: "ubuntu-14.04.3-server-x86_64",
-      iso_file: "/opt/ubuntu-14.04.3-server-amd64.iso",
-      ppa_repo_dir: "/opt",
-      ppa_repo_name: "trusty-juno-ppa",
-      default_ppa_repo_name: "ubuntu-14.04.3-server-x86_64",
-      breed: "ubuntu",
-      kickstart: "default.seed",
-      kopts: "netcfg/choose_interface=auto console='ttyS0,115200n8' console=tty0",
-      kopts_post: "console='ttyS0,115200n8'",
-      extra: "--apt-dists=trusty --apt-components=main"
-    }
-  - {
-      name: "CentOS-7.1-x86_64",
-      iso_file: "/opt/CentOS-7-x86_64-Minimal-1503-01.iso",
-      ppa_repo_dir: "/opt",
-      ppa_repo_name: "centos7-juno-ppa",
-      breed: "redhat",
-      kickstart: "default.ks",
-      kopts: "",
-      kopts_post: "",
-      extra: ""
-    }
+  ubuntu:
+    breed: "ubuntu"
+    kickstart: "default.seed"
+    kopts: "netcfg/choose_interface=auto console='ttyS0,115200n8' console=tty0"
+    kopts_post: "console='ttyS0,115200n8'"
+    extra: "--apt-dists=trusty --apt-components=main"
+
+  centos:
+    breed: "redhat"
+    kickstart: "default.ks"
 
 ##  volume mapping for cobbler ##
 
