@@ -197,8 +197,8 @@
             --distro=$name --ksmeta="tree=http://{{ mgmt_next_ip }}/cobbler/ks_mirror/$name" \
             {{ push_ssh_keys_vars | default() }} \
             --kickstart=/var/lib/cobbler/kickstarts/{{ item.value.kickstart }} \
-            --kopts={{ item.value.kopts | default("") }} \
-            --kopts-post={{ item.value.kopts_post | default("") }}
+            --kopts="{{ item.value.kopts | default("") }}" \
+            --kopts-post="{{ item.value.kopts_post | default("") }}"
     done
   with_dict: distros
   args:
