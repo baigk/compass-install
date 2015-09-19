@@ -192,8 +192,7 @@
   shell: |
     for i in `ls /opt/cobbler/{{ item.key }}/iso/*`; do
         name=`basename $i | sed -e 's/.iso//g' -e 's/-amd64//g' -e 's/-x86_64//g'`-x86_64
-        ppa_repo_name=`ls /opt/cobbler/{{ item.key }}/ppa | sed 's/.tar.gz//g' | xargs`
-        cobbler profile edit --name=$name --repo=$ppa_repo_name \
+        cobbler profile edit --name=$name \
             --distro=$name --ksmeta="tree=http://{{ mgmt_next_ip }}/cobbler/ks_mirror/$name" \
             {{ push_ssh_keys_vars | default() }} \
             --kickstart=/var/lib/cobbler/kickstarts/{{ item.value.kickstart }} \

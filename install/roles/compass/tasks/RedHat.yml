@@ -41,7 +41,7 @@
 - name: initialize mysql password
   mysql_user: user={{ compass_db_user }} password={{ compass_db_pass }}
               priv=compass.*:ALL,GRANT state=present
- 
+
 - name: create compass database
   mysql_db: name=compass state=present
 
@@ -87,13 +87,17 @@
   file: path=/var/ansible/run state=directory
   when: "'ansible' in {{ pkg_installer }}"
 
-
 - name: copy ansible scripts into ansible folder
-  shell: cp -rf /opt/compass-adapters/ansible/openstack_juno /var/ansible/.
+  shell: |
+    for i in `ls /opt/compass-adapters/ansible/ | grep "openstack_"`; do
+        mkdir -p /var/ansible/$i
+        cp -rf /opt/compass-adapters/ansible/openstack/* /var/ansible/$i
+        cp -rf /opt/compass-adapters/ansible/$i /var/ansible/
+    done
   when: "'ansible' in {{ pkg_installer }}"
 
 - name: copy ansible roles into ansible folder
-  shell: cp -rf /opt/compass-adapters/ansible/roles /var/ansible/.
+  shell: cp -rf /opt/compass-adapters/ansible/roles /var/ansible/
   when: "'ansible' in {{ pkg_installer }}"
 
 - name: write python home into switch virtualenv
