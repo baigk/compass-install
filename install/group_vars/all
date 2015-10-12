@@ -154,6 +154,10 @@ distros:
     breed: "redhat"
     kickstart: "default.ks"
 
+  redhat:
+    breed: "redhat"
+    kickstart: "default.ks"
+
 ##  volume mapping for cobbler ##
 
 # mount point for isos on cobbler host
