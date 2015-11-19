@@ -4,6 +4,66 @@
   with_items:
     - python-paramiko
     - python-jinja2
+    - elasticsearch
+    - logstash
+    - kibana
+    - java
+  tags:
+    - elk
+
+- name: auto set java env
+  copy: src={{ item }} dest=/etc/profile.d/{{ item }} mode=0755
+  with_items:
+    - jdk.csh
+    - jdk.sh
+  tags:
+    - elk
+
+- name: set java env
+  shell: /etc/profile.d/jdk.sh
+  tags:
+    - elk
+
+- name: copy elasticsearch config
+  copy: src=elasticsearch.yml dest=/etc/elasticsearch/elasticsearch.yml
+  tags:
+    - elk
+
+- name: copy kibana config
+  copy: src=kibana.yml dest=/opt/kibana/config/kibana.yml
+  tags:
+    - elk
+
+- name: copy kibana service scripts
+  copy: src=kibana-4.x-init dest=/etc/init.d/kibana mode=0755
+  tags:
+    - elk
+
+- name: copy kibana autostart scripts
+  copy: src=kibana-4.x-default dest=/etc/default/kibana
+  tags:
+    - elk
+
+- name: copy logstash config
+  copy: src={{ item }} dest=/etc/logstash/conf.d/{{ item }}
+  with_items:
+    - ansible.conf
+    - compass.conf
+    - messages.conf
+  tags:
+    - elk
+
+- name: create logstash patterns directory
+  file: path=/opt/logstash/patterns state=directory
+  tags:
+    - elk
+
+- name: copy logstash patten
+  copy: src={{ item }} dest=/opt/logstash/patterns/{{ item }}
+  with_items:
+    - ansible.pat
+  tags:
+    - elk
 
 - name: copy httpd config
   copy: src={{ item }} dest=/etc/httpd/conf.d/{{ item }}
@@ -31,6 +91,21 @@
 # to run compass as its own user in the future.
 # - name: append compass group to apache user groups
 #  user: name=apache groups=root append=yes
+
+- name: start elasticsearch
+  service: name=elasticsearch state=started enabled=yes
+  tags:
+    - elk
+
+- name: start logstash
+  service: name=logstash state=started enabled=yes
+  tags:
+    - elk
+
+- name: start kibana
+  service: name=kibana state=started enabled=yes
+  tags:
+    - elk
 
 - name: start mysqld
   service: name=mysqld state=started enabled=yes
