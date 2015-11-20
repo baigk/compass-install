@@ -72,6 +72,7 @@
     - http_pip.conf
     - images.conf
     - packages.conf
+    - elk.conf
   notify:
     restart http service
 
