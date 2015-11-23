@@ -44,6 +44,11 @@
   tags:
     - elk
 
+- name : modify kibana api base url
+  shell: sed -i "s/api\/status/app\/kibana\/api\/status/g" /opt/kibana/optimize/bundles/statusPage.bundle.js
+  tags: 
+    - elk
+
 - name: copy logstash config
   copy: src={{ item }} dest=/etc/logstash/conf.d/{{ item }}
   with_items:
