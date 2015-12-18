@@ -154,6 +154,44 @@ distros:
     breed: "redhat"
     kickstart: "default.ks"
 
+compass_packages:
+  - redis
+  - mysql
+  - mod_wsgi
+  - nfs-utils
+  - elasticsearch
+  - logstash
+  - kibana
+  - java
+  - mysql-devel
+  - mysql-server
+  - MySQL-python
+  - python-devel
+  - rabbitmq-server
+  - libselinux-python
+  - python-setuptools
+  - python-paramiko
+  - python-jinja2
+
+cobbler_packages:
+  - yum
+  - wget
+  - bind
+  - gcc
+  - httpd
+  - rsync
+  - dhcp
+  - xinetd
+  - syslinux
+  - mkisofs
+  - net-tools
+  - createrepo
+  - cobbler
+  - cobbler-web
+  - pykickstart
+  - fence-agents
+  - tftp-server
+
 ##  volume mapping for cobbler ##
 
 # mount point for isos on cobbler host

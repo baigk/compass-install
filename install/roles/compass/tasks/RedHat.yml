@@ -1,13 +1,7 @@
 ---
 - name: install packages
   yum: name={{ item }} state=present
-  with_items:
-    - python-paramiko
-    - python-jinja2
-    - elasticsearch
-    - logstash
-    - kibana
-    - java
+  with_items: compass_packages
   tags:
     - elk
 
@@ -85,12 +79,6 @@
 
 - name: stop iptables
   service: name=iptables state=stopped enabled=no
-
-- name: disable selinux
-  selinux: state=disabled
-
-- name: disable selinux real time
-  shell: echo 0 > /selinux/enforce
 
 # TODO: currently compass use root user and group, apache has to
 # be in root group to write wsgi logs in /var/log/compass/, need
@@ -263,9 +251,11 @@
   template: src=switch_machines_file.j2
             dest=/etc/compass/switch_machines_file
   when: test is defined and test == True
+  tags: switch_machine
 
 - name: inject switches and mac addresses
   shell: /opt/compass/bin/manage_db.py set_switch_machines --switch_machines_file /etc/compass/switch_machines_file
   when: test is defined and test == True
+  tags: switch_machine
 #- name: run compass check
 #  command: compass check

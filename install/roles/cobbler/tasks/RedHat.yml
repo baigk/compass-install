@@ -1,4 +1,8 @@
 ---
+- name: install packages
+  yum: name={{ item }} state=present
+  with_items: cobbler_packages
+
 - name: turn off iptables
   service: name=iptables state=stopped enabled=no
 
@@ -26,9 +30,6 @@
 - name: disable selinux
   selinux: state=disabled
 
-- name: disable selinux real time
-  shell: echo 0 > /selinux/enforce
-
 - name: copy cobbler configuration files
   template: src={{ item.name }} dest=/etc/cobbler/{{ item.file_name }} mode=0644
   with_items:
@@ -40,7 +41,6 @@
   notify:
     - restart httpd
     - restart cobbler
-    - cobbler sync
 
 - meta: flush_handlers
 
@@ -68,8 +68,6 @@
     - scripts
     - triggers
     - kickstarts
-  notify:
-    cobbler sync
 
 - name: change snippets mode
   file: path=/var/lib/cobbler mode=0755 recurse=yes
@@ -79,12 +77,6 @@
 
 - name: change kickstart mode
   file: path=/var/lib/cobbler/kickstarts mode=0666 recurse=yes
-
-- name: disable selinux
-  selinux: state=disabled
-
-- name: disable selinux real time
-  command: echo 0 > /selinux/enforce
 
 - name: clean cobbler log folder
   file: path=/var/log/cobbler state=absent
@@ -161,9 +153,6 @@
     creates: /opt/repo_added.txt
   ignore_errors: yes
   run_once: True
-
-- name: cobbler repo sync
-  command: cobbler reposync
 
 - name: copy loader files
   shell: cp -f /opt/{{ cobbler_loaders_name }} /var/lib/cobbler/
