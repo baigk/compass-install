@@ -175,6 +175,7 @@ compass_packages:
 
 cobbler_packages:
   - yum
+  - vim
   - wget
   - bind
   - gcc
