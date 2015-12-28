@@ -166,6 +166,7 @@ compass_packages:
   - mysql-devel
   - mysql-server
   - MySQL-python
+  - nmap-ncat
   - python-devel
   - rabbitmq-server
   - libselinux-python
@@ -180,6 +181,7 @@ cobbler_packages:
   - bind
   - gcc
   - httpd
+  - lsof
   - rsync
   - dhcp
   - xinetd
