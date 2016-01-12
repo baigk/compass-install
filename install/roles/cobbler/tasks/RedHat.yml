@@ -3,8 +3,8 @@
   yum: name={{ item }} state=present
   with_items: cobbler_packages
 
-- name: turn off iptables
-  service: name=iptables state=stopped enabled=no
+- name: turn off firewalld
+  service: name=firewalld state=stopped enabled=no
 
 - name: replace config files
   copy: src={{ item.name }} dest={{ item.dest }}
