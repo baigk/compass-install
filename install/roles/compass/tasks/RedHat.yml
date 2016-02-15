@@ -148,6 +148,7 @@
     - /opt/compass/bin
     - /var/www/compass
     - /var/www/compass_web
+    - /var/www/compass_web/v2.5
 
 - name: create /var/log/compass
   file: path=/var/log/compass mode=0777 state=directory
@@ -243,9 +244,8 @@
   shell: /opt/compass/bin/manage_db.py createdb
   run_once: True
 
-
 - name: copy web ui files
-  shell: cp -rf /opt/compass-web/v2 /var/www/compass_web/
+  shell: cp -rf /opt/compass-web/v2.5/target/* /var/www/compass_web/v2.5/
 
 - name: create switch file if test mode enabled
   template: src=switch_machines_file.j2
