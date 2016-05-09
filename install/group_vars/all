@@ -20,7 +20,7 @@ dockerized_chef: False
 shared_dir: "~/compass/shared"
 
 # pkg installer
-pkg_installer: ['ansible']
+pkg_installer: "ansible"
 
 ## default urls
 
