@@ -78,7 +78,7 @@
 - meta: flush_handlers
 
 - name: stop iptables
-  service: name=iptables state=stopped enabled=no
+  service: name=firewalld state=stopped enabled=no
 
 # TODO: currently compass use root user and group, apache has to
 # be in root group to write wsgi logs in /var/log/compass/, need
@@ -155,7 +155,7 @@
 
 - name: create ansible folder
   file: path=/var/ansible/run state=directory
-  when: "'ansible' in {{ pkg_installer }}"
+  when: "'ansible' in '{{ pkg_installer }}'"
 
 - name: copy ansible scripts into ansible folder
   shell: |
@@ -164,11 +164,11 @@
         cp -rf /opt/compass-adapters/ansible/openstack/* /var/ansible/$i
         cp -rf /opt/compass-adapters/ansible/$i /var/ansible/
     done
-  when: "'ansible' in {{ pkg_installer }}"
+  when: "'ansible' in '{{ pkg_installer }}'"
 
 - name: copy ansible roles into ansible folder
   shell: cp -rf /opt/compass-adapters/ansible/roles /var/ansible/
-  when: "'ansible' in {{ pkg_installer }}"
+  when: "'ansible' in '{{ pkg_installer }}'"
 
 - name: write python home into switch virtualenv
   lineinfile: dest={{ COMPASS_PATH }}/bin/switch_virtualenv.py.template
