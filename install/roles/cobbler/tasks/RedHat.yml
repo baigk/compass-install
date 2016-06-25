@@ -93,7 +93,8 @@
   register: ppa_files
 
 - name: untar cobbler ppa repo
-  unarchive: src={{ item }} dest=/var/lib/cobbler/repo_mirror/ copy=no
+  #unarchive: src={{ item }} dest=/var/lib/cobbler/repo_mirror/ copy=no
+  shell : tar -zxf {{ item }} -C /var/lib/cobbler/repo_mirror
   with_items: ppa_files.stdout_lines
 
 - name: get all ppa dir
@@ -158,8 +159,9 @@
   shell: cp -f /opt/{{ cobbler_loaders_name }} /var/lib/cobbler/
 
 - name: untar loaders file
-  unarchive: src=/var/lib/cobbler/{{ cobbler_loaders_name }} dest=/var/lib/cobbler/
-             copy=no
+  #unarchive: src=/var/lib/cobbler/{{ cobbler_loaders_name }} dest=/var/lib/cobbler/
+  #           copy=no
+  shell: tar -zxf /var/lib/cobbler/{{ cobbler_loaders_name }} -C /var/lib/cobbler/
 
 - name: cobbler get loaders
   command: cobbler get-loaders
