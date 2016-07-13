@@ -30,6 +30,13 @@
 - name: disable selinux
   selinux: state=disabled
 
+- name: copy cobbler OS file
+  template: src={{ item.name }} dest=/var/lib/cobbler/{{ item.file_name }} mode=0644
+  with_items:
+    - { name: distro_signatures.json, file_name: distro_signatures.json }
+  notify:
+    - restart cobbler
+
 - name: copy cobbler configuration files
   template: src={{ item.name }} dest=/etc/cobbler/{{ item.file_name }} mode=0644
   with_items:
@@ -117,7 +124,7 @@
 
 - name: import iso
   shell: |
-    for i in `ls /opt/cobbler/{{ item.key}}/iso/*`; do
+    for i in `ls /opt/cobbler/{{ item.value.breed }}/iso/*`; do
         name=`basename $i | sed -e 's/.iso//g' -e 's/-amd64//g' -e 's/-x86_64//g'`-x86_64
         if [[ `mount | grep "$name"` ]]; then
             continue
@@ -144,7 +151,7 @@
 
 - name: add repos
   shell: |
-    for i in `ls /opt/cobbler/{{ item.key }}/ppa/*`; do
+    for i in `ls /opt/cobbler/{{ item.value.breed }}/ppa/* | grep {{ item.value.aliase }}`; do
         filename=`basename $i | sed 's/.tar.gz//g'`
         cobbler repo add --name $filename --mirror=/var/lib/cobbler/repo_mirror/$filename \
                          --mirror-locally=Y --arch=x86_64 {{ item.value.extra | default()}}
@@ -181,7 +188,7 @@
 
 - name: edit profiles
   shell: |
-    for i in `ls /opt/cobbler/{{ item.key }}/iso/*`; do
+    for i in `ls /opt/cobbler/{{ item.value.breed }}/iso/* | grep {{ item.key }}`; do
         name=`basename $i | sed -e 's/.iso//g' -e 's/-amd64//g' -e 's/-x86_64//g'`-x86_64
         cobbler profile edit --name=$name \
             --distro=$name --ksmeta="tree=http://{{ mgmt_next_ip }}/cobbler/ks_mirror/$name" \
@@ -193,6 +200,8 @@
   with_dict: distros
   args:
     creates: /opt/add_profile.txt
+
+# "
 
 - name: cobbler repo sync again
   shell: cobbler reposync
