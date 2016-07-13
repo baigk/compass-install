@@ -143,7 +143,7 @@ ubuntu_1404: "Ubuntu-14.04-x86_64"
 region: "lab"
 
 distros:
-  ubuntu-14.04
+  ubuntu-14.04:
     breed: "ubuntu"
     kickstart: "default.seed"
     kopts: "netcfg/choose_interface=auto console='ttyS0,115200n8' console=tty0 biosdevname=0"
