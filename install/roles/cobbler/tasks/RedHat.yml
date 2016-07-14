@@ -124,7 +124,7 @@
 
 - name: import iso
   shell: |
-    for i in `ls /opt/cobbler/{{ item.value.breed }}/iso/*`; do
+    for i in `ls /opt/cobbler/{{ item.value.version }}/iso/* | grep {{ item.key }}`; do
         name=`basename $i | sed -e 's/.iso//g' -e 's/-amd64//g' -e 's/-x86_64//g'`-x86_64
         if [[ `mount | grep "$name"` ]]; then
             continue
@@ -151,7 +151,7 @@
 
 - name: add repos
   shell: |
-    for i in `ls /opt/cobbler/{{ item.value.breed }}/ppa/* | grep {{ item.value.aliase }}`; do
+    for i in `ls /opt/cobbler/{{ item.value.version }}/ppa/* | grep {{ item.value.aliase }}`; do
         filename=`basename $i | sed 's/.tar.gz//g'`
         cobbler repo add --name $filename --mirror=/var/lib/cobbler/repo_mirror/$filename \
                          --mirror-locally=Y --arch=x86_64 {{ item.value.extra | default()}}
@@ -188,7 +188,7 @@
 
 - name: edit profiles
   shell: |
-    for i in `ls /opt/cobbler/{{ item.value.breed }}/iso/* | grep {{ item.key }}`; do
+    for i in `ls /opt/cobbler/{{ item.value.version }}/iso/* | grep {{ item.key }}`; do
         name=`basename $i | sed -e 's/.iso//g' -e 's/-amd64//g' -e 's/-x86_64//g'`-x86_64
         cobbler profile edit --name=$name \
             --distro=$name --ksmeta="tree=http://{{ mgmt_next_ip }}/cobbler/ks_mirror/$name" \

@@ -150,6 +150,7 @@ distros:
     kopts_post: "console='ttyS0,115200n8' console=tty0 biosdevname=0"
     extra: "--apt-dists=trusty --apt-components=main"
     aliase: "trusty"
+    version: "ubuntu"
 
   ubuntu-16.04:
     breed: "ubuntu"
@@ -158,11 +159,13 @@ distros:
     kopts_post: "console='ttyS0,115200n8' console=tty0 net.ifnames=0 biosdevname=0"
     extra: "--apt-dists=xenial --apt-components=main"
     aliase: "xenial"
+    version: "ubuntu"
 
-  centos:
+  CentOS-7:
     breed: "redhat"
     kickstart: "default.ks"
     aliase: "centos7"
+    version: "centos"
 
 compass_packages:
   - redis
