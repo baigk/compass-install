@@ -69,6 +69,7 @@
   with_items:
     - ods-server.conf
     - http_pip.conf
+    - http_pip-openstack.conf
     - images.conf
     - packages.conf
     - elk.conf
