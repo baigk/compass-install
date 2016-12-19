@@ -166,6 +166,7 @@
         cp -rf /opt/compass-adapters/ansible/$i /var/ansible/
     done
   when: "'ansible' in '{{ pkg_installer }}'"
+  ignore_errors: yes
 
 - name: copy ansible roles into ansible folder
   shell: cp -rf /opt/compass-adapters/ansible/roles /var/ansible/
