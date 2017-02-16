@@ -22,6 +22,9 @@ shared_dir: "~/compass/shared"
 # pkg installer
 pkg_installer: "ansible"
 
+## compass vm timezone ##
+timezone: Asia/Shanghai
+
 ## default urls
 
 # centos

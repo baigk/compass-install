@@ -64,6 +64,24 @@
   tags:
     - elk
 
+- name: install ntp
+  yum: name=ntp state=installed
+  tags: ntp
+
+- name: copy ntp config
+  file: src=ntp.conf dest=/etc/ntp.conf
+  notify:
+    - restart ntp service
+  tags: ntp
+
+- name: make sure ntp is started up
+  service: name=ntpd state=started enabled=yes
+  tags: ntp
+
+- name: set compass vm timezone
+  shell: timedatectl set-timezone {{ timezone }}
+  tags: ntp
+
 - name: copy httpd config
   copy: src={{ item }} dest=/etc/httpd/conf.d/{{ item }}
   with_items:
