@@ -183,6 +183,9 @@
         cp -rf /opt/compass-adapters/ansible/openstack/* /var/ansible/$i
         cp -rf /opt/compass-adapters/ansible/$i /var/ansible/
     done
+    if [ -d /opt/compass-adapters/ansible/kubernetes ]; then
+        cp -rf /opt/compass-adapters/ansible/kubernetes /var/ansible/
+    fi
   when: "'ansible' in '{{ pkg_installer }}'"
   ignore_errors: yes
 
